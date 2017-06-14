@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <!-- druid -->
+    <!-- https://github.com/alibaba/druid/wiki/%E9%85%8D%E7%BD%AE_DruidDataSource%E5%8F%82%E8%80%83%E9%85%8D%E7%BD%AE -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${data_source_url}"/>
+        <property name="username" value="${data_source_username}"/>
+        <property name="password" value="${data_source_password}"/>
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="1"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="20"/>
+
+        <!-- 配置获取连接等待超时的时间，单位是毫秒 -->
+        <property name="maxWait" value="60000"/>
+
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="25200000"/>
+
+        <property name="validationQuery" value="${validation_query}"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+
+        <!-- 打开 PSCache，并且指定每个连接上 PSCache 的大小 -->
+        <!-- 如果用 Oracle，则把 poolPreparedStatements 配置为 true，MySQL 可以配置为 false。分库分表较多的数据库，建议配置为 false。 -->
+        <property name="poolPreparedStatements" value="false"/>
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+
+        <!-- 当程序存在缺陷时，申请的连接忘记关闭，这时候，就存在连接泄漏了。Druid 提供了 RemoveAbandanded 相关配置，用来关闭长时间不使用的连接。 -->
+        <!-- 配置 removeAbandoned 对性能会有一些影响，建议怀疑存在泄漏之后再打开。在上面的配置中，如果连接超过 30 分钟未关闭，就会被强行回收，并且日志记录连接申请时的调用堆栈。 -->
+        <!-- https://github.com/alibaba/druid/wiki/%E8%BF%9E%E6%8E%A5%E6%B3%84%E6%BC%8F%E7%9B%91%E6%B5%8B -->
+        <!-- 打开 removeAbandoned 功能 -->
+        <property name="removeAbandoned" value="false"/>
+        <!-- 1800 秒，也就是 30 分钟 -->
+        <property name="removeAbandonedTimeout" value="1800"/>
+        <!-- 关闭 abanded 连接时输出错误日志 -->
+        <property name="logAbandoned" value="true"/>
+
+        <!-- 配置监控统计拦截的 filters -->
+        <!-- https://github.com/alibaba/druid/wiki/%E9%85%8D%E7%BD%AE_StatFilter -->
+        <!-- mergeSql 可以合并输出的 sql，方便查看，但是在 MyBatis 框架中使用这个则无法监控 sql，需要用 stat -->
+        <!--<property name="filters" value="mergeSql,log4j"/>-->
+        <!--<property name="filters" value="mergeSql,wall"/>-->
+        <!--<property name="filters" value="stat"/>-->
+        <!--<property name="filters" value="mergeSql"/>-->
+        <property name="filters" value="stat,log4j"/>
+    </bean>
+</beans>
