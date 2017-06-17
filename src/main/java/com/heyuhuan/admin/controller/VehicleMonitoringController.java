@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.Map;
+import java.util.List;
 
 /**
  * 车辆监控控制类
@@ -26,8 +27,13 @@ public class VehicleMonitoringController {
     private VehicleService vehicleService;
 
     @RequestMapping(value = "/vehicles", method = RequestMethod.GET)
-    public Map<Integer, Vehicle> getVehicles() {
-        return vehicleService.getMap();
+    public List<Vehicle> getVehicles() {
+        return vehicleService.getList();
+    }
+
+    @RequestMapping(value = "/vehicles/filter", method = RequestMethod.GET)
+    public List<Vehicle> filterVehicles(@RequestParam(value = "province[]", required = false) List<String> province, String numberPlate, @RequestParam(value = "area[]", required = false) List<Long> area) {
+        return vehicleService.getList(province, numberPlate, area);
     }
 
     @RequestMapping(value = "/vehicles/{id}", method = RequestMethod.PUT)

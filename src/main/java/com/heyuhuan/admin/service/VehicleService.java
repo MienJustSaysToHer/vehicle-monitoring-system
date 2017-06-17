@@ -2,7 +2,7 @@ package com.heyuhuan.admin.service;
 
 import com.heyuhuan.admin.pojo.Vehicle;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 车辆监控服务类接口
@@ -13,7 +13,9 @@ import java.util.Map;
  */
 public interface VehicleService {
 
-    Map<Integer, Vehicle> getMap();
+    List<Vehicle> getList();
+
+    List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area);
 
     int update(Vehicle vehicle);
 

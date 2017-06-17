@@ -1,9 +1,9 @@
 package com.heyuhuan.admin.mapper;
 
 import com.heyuhuan.admin.pojo.Vehicle;
-import org.apache.ibatis.annotations.MapKey;
+import org.apache.ibatis.annotations.Param;
 
-import java.util.Map;
+import java.util.List;
 
 public interface VehicleMapper {
     /**
@@ -54,6 +54,10 @@ public interface VehicleMapper {
      */
     int updateByPrimaryKey(Vehicle record);
 
-    @MapKey("id")
-    Map<Integer, Vehicle> selectVehicles();
+    List<Vehicle> findList();
+
+    List<Vehicle> findFilterList(@Param("province") List<String> province, @Param("numberPlate") String numberPlate);
+
+    Integer search(@Param("longitude") Double longitude, @Param("latitude") Double latitude, @Param("area") Long area);
+
 }

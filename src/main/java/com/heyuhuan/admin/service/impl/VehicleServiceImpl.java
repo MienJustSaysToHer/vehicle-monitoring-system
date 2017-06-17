@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 车辆监控服务类
@@ -25,8 +26,23 @@ public class VehicleServiceImpl implements VehicleService {
     private VehicleMapper vehicleMapper;
 
     @Override
-    public Map<Integer, Vehicle> getMap() {
-        return vehicleMapper.selectVehicles();
+    public List<Vehicle> getList() {
+        return vehicleMapper.findList();
+    }
+
+    @Override
+    public List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area) {
+        List<Vehicle> vehicles = vehicleMapper.findFilterList(province, numberPlate);
+        if (area != null && area.size() != 0) {
+            Iterator<Vehicle> vehicleIterator = vehicles.iterator();
+            while (vehicleIterator.hasNext()) {
+                Vehicle vehicle = vehicleIterator.next();
+                if (vehicleMapper.search(vehicle.getLongitude(), vehicle.getLatitude(), area.get(area.size() - 1)) <= 0) {
+                    vehicleIterator.remove();
+                }
+            }
+        }
+        return vehicles;
     }
 
     @Override

@@ -6,6 +6,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 车辆监控服务测试类
@@ -23,7 +25,11 @@ public class VehicleMapperTest {
 
     @Test
     public void selectVehiclesTest() {
-        System.out.println(vehicleMapper.selectVehicles());
+        List<String> province = Arrays.asList("黑");
+        String numberPlate = null;
+        System.out.println(vehicleMapper.findList());
+        System.out.println(vehicleMapper.findFilterList(province, numberPlate));
+        System.out.println(vehicleMapper.search(117.027027, 36.674424, 1357L));
     }
 
 }
