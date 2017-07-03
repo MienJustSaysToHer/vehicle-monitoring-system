@@ -1,5 +1,6 @@
 package com.heyuhuan.admin.controller;
 
+import com.heyuhuan.admin.dto.Command;
 import com.heyuhuan.admin.pojo.Vehicle;
 import com.heyuhuan.admin.service.VehicleService;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 车辆监控控制类
@@ -20,27 +22,34 @@ import java.util.List;
  * @since 1.0
  */
 @RestController
-@RequestMapping("/vehicle-monitoring")
+@RequestMapping("/vehicles")
 public class VehicleMonitoringController {
 
     @Resource
     private VehicleService vehicleService;
 
-    @RequestMapping(value = "/vehicles", method = RequestMethod.GET)
-    public List<Vehicle> getVehicles() {
-        return vehicleService.getList();
-    }
-
-    @RequestMapping(value = "/vehicles/filter", method = RequestMethod.GET)
-    public List<Vehicle> filterVehicles(@RequestParam(value = "province[]", required = false) List<String> province, String numberPlate, @RequestParam(value = "area[]", required = false) List<Long> area) {
+    @RequestMapping(method = RequestMethod.GET)
+    public List<Vehicle> getVehicles(@RequestParam(value = "province[]", required = false) List<String> province, String numberPlate, @RequestParam(value = "area[]", required = false) List<Long> area) {
         return vehicleService.getList(province, numberPlate, area);
     }
 
-    @RequestMapping(value = "/vehicles/{id}", method = RequestMethod.PUT)
-    public String putVehicle(@PathVariable("id") Integer id, @RequestBody Vehicle vehicle) {
-        vehicle.setId(id);
+    @RequestMapping(value = "/command/{phone}", method = RequestMethod.POST)
+    public String commandVehicle(@PathVariable("phone") String phone, @RequestBody Command command) {
+        command.setPhone(phone);
+        vehicleService.execute(command);
+        return "success";
+    }
+
+    @RequestMapping(value = "/{phone}", method = RequestMethod.POST)
+    public String postVehicle(@PathVariable("phone") String phone, @RequestBody Vehicle vehicle) {
+        vehicle.setPhone(phone);
         vehicleService.update(vehicle);
         return "success";
+    }
+
+    @RequestMapping(value = "/distribution", method = RequestMethod.GET)
+    public List<Map<String, Object>> getVehicleDistribution() {
+        return vehicleService.getDistributionList();
     }
 
 }

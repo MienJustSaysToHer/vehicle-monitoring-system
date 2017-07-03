@@ -54,10 +54,12 @@ public interface VehicleMapper {
      */
     int updateByPrimaryKey(Vehicle record);
 
-    List<Vehicle> findList();
-
-    List<Vehicle> findFilterList(@Param("province") List<String> province, @Param("numberPlate") String numberPlate);
+    List<Vehicle> findList(@Param("province") List<String> province, @Param("numberPlate") String numberPlate);
 
     Integer search(@Param("longitude") Double longitude, @Param("latitude") Double latitude, @Param("area") Long area);
+
+    Vehicle selectByPhone(String phone);
+
+    int updateByPhone(Vehicle vehicle);
 
 }

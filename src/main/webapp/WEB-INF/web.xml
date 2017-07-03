@@ -8,7 +8,7 @@
     <!-- Spring 配置文件 -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath*:spring/spring.xml,classpath*:spring/spring-datasource.xml,classpath*:spring/spring-mybatis.xml,classpath*:spring/spring-transaction.xml</param-value>
+        <param-value>classpath*:spring/spring.xml,classpath*:spring/spring-datasource.xml,classpath*:spring/spring-mybatis.xml,classpath*:spring/spring-tasks.xml,classpath*:spring/spring-transaction.xml</param-value>
     </context-param>
     <!-- Spring 监听器 -->
     <listener>

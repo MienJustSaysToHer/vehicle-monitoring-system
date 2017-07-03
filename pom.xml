@@ -283,6 +283,18 @@
             <artifactId>httpclient</artifactId>
             <version>${httpclient.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>cn.jpush.api</groupId>
+            <artifactId>jpush-client</artifactId>
+            <version>3.2.19</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
