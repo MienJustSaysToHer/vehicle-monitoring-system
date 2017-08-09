@@ -1,13 +1,16 @@
 package com.heyuhuan.admin.service.impl;
 
+import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.Notification;
 import com.heyuhuan.admin.dto.Command;
 import com.heyuhuan.admin.dto.Json;
+import com.heyuhuan.admin.mapper.TransportOrderMapper;
 import com.heyuhuan.admin.mapper.VehicleMapper;
 import com.heyuhuan.admin.mapper.XxAreaMapper;
+import com.heyuhuan.admin.pojo.TransportOrder;
 import com.heyuhuan.admin.pojo.Vehicle;
 import com.heyuhuan.admin.pojo.XxArea;
 import com.heyuhuan.admin.service.PushService;
@@ -39,6 +42,9 @@ public class VehicleServiceImpl implements VehicleService {
     @Resource
     private VehicleMapper vehicleMapper;
 
+    @Resource
+    private TransportOrderMapper transportOrderMapper;
+
     @Resource(name = "scheduler")
     private TaskScheduler taskScheduler;
 
@@ -49,15 +55,19 @@ public class VehicleServiceImpl implements VehicleService {
     private XxAreaMapper xxAreaMapper;
 
     @Override
-    public List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area) {
-        List<Vehicle> vehicles = vehicleMapper.findList(province, numberPlate);
-        if (area != null && area.size() != 0) {
-            Iterator<Vehicle> vehicleIterator = vehicles.iterator();
-            while (vehicleIterator.hasNext()) {
-                Vehicle vehicle = vehicleIterator.next();
-                if (vehicleMapper.search(vehicle.getLongitude(), vehicle.getLatitude(), area.get(area.size() - 1)) <= 0) {
-                    vehicleIterator.remove();
-                }
+    public List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area, Byte state) {
+        List<Vehicle> vehicles = vehicleMapper.findList(province, numberPlate, state);
+        Iterator<Vehicle> vehicleIterator = vehicles.iterator();
+        while (vehicleIterator.hasNext()) {
+            Vehicle vehicle = vehicleIterator.next();
+            if (area != null && area.size() != 0 && vehicleMapper.search(vehicle.getLongitude(), vehicle.getLatitude(), area.get(area.size() - 1)) <= 0) {
+                vehicleIterator.remove();
+                continue;
+            }
+            if (vehicle.getState() == 1) {
+                TransportOrder transportOrder = transportOrderMapper.selectByVehicleid(vehicle.getId(), vehicle.getState());
+                vehicle.setTonumber(transportOrder.getTonumber());
+                vehicle.setLoadweight(vehicle.getLoadweight() - transportOrder.getWeight());
             }
         }
         return vehicles;
@@ -69,7 +79,16 @@ public class VehicleServiceImpl implements VehicleService {
             taskScheduler.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert(command.getContent())).build());
+                    switch (command.getType()) {
+                        case 0:
+                            pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert("您有新的运输订单")).setMessage(Message.newBuilder().setMsgContent("您有新的运输订单").addExtra("id", command.getId()).build()).build());
+                            break;
+                        case 1:
+                            pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert(command.getContent())).build());
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }, command.getTime());
             Json j = new Json();
@@ -77,7 +96,17 @@ public class VehicleServiceImpl implements VehicleService {
             j.setSuccess(true);
             return j;
         } else {
-            return pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert(command.getContent())).build());
+            switch (command.getType()) {
+                case 0:
+                    return pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert("您有新的运输订单")).setMessage(Message.newBuilder().setMsgContent("您有新的运输订单").addExtra("id", command.getId()).build()).build());
+                case 1:
+                    return pushService.push(PushPayload.newBuilder().setPlatform(Platform.all()).setAudience(Audience.alias(command.getPhone())).setNotification(Notification.alert(command.getContent())).build());
+                default:
+                    Json j = new Json();
+                    j.setMsg("发送失败，命令类型错误");
+                    j.setSuccess(true);
+                    return j;
+            }
         }
     }
 
@@ -105,7 +134,7 @@ public class VehicleServiceImpl implements VehicleService {
     public List<Map<String, Object>> getDistributionList() {
         List<Map<String, Object>> distribution = new ArrayList<>();
         List<XxArea> xxAreas = xxAreaMapper.findList();
-        List<Vehicle> vehicles = vehicleMapper.findList(null, null);
+        List<Vehicle> vehicles = vehicleMapper.findList(null, null, null);
         for (XxArea x : xxAreas) {
             Iterator<Vehicle> vehicleIterator = vehicles.iterator();
             Integer amount = 0;

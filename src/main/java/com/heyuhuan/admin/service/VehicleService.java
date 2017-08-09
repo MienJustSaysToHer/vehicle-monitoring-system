@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public interface VehicleService {
 
-    List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area);
+    List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area, Byte state);
 
     Json execute(Command command);
 

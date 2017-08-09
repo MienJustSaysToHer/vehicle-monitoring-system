@@ -29,8 +29,8 @@ public class VehicleMonitoringController {
     private VehicleService vehicleService;
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Vehicle> getVehicles(@RequestParam(value = "province[]", required = false) List<String> province, String numberPlate, @RequestParam(value = "area[]", required = false) List<Long> area) {
-        return vehicleService.getList(province, numberPlate, area);
+    public List<Vehicle> getVehicles(@RequestParam(value = "province[]", required = false) List<String> province, String numberPlate, @RequestParam(value = "area[]", required = false) List<Long> area, Byte state) {
+        return vehicleService.getList(province, numberPlate, area, state);
     }
 
     @RequestMapping(value = "/command/{phone}", method = RequestMethod.POST)

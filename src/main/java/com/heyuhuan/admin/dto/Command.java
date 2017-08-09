@@ -19,6 +19,8 @@ public class Command {
 
     private String content;
 
+    private Integer id;
+
     private Boolean assertTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -46,6 +48,14 @@ public class Command {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Boolean getAssertTime() {
