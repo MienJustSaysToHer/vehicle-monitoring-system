@@ -5,6 +5,7 @@ import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.Notification;
+import com.heyuhuan.admin.dao.PositionDao;
 import com.heyuhuan.admin.dto.Command;
 import com.heyuhuan.admin.dto.Json;
 import com.heyuhuan.admin.mapper.TransportOrderMapper;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +55,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Resource
     private XxAreaMapper xxAreaMapper;
+
+    @Resource
+    private PositionDao positionDao;
 
     @Override
     public List<Vehicle> getList(List<String> province, String numberPlate, List<Long> area, Byte state) {
@@ -112,21 +117,35 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public void update(Vehicle vehicle) {
-        Vehicle vehicle2 = vehicleMapper.selectByPhone(vehicle.getPhone());
-        if (vehicle2 == null) {
-            Date now = new Date();
-            vehicle.setCreateDate(now);
-            vehicle.setModifyDate(now);
-            vehicle.setState((byte) 0);
-            vehicleMapper.insertSelective(vehicle);
-        } else {
-            vehicle.setModifyDate(new Date());
-            vehicleMapper.updateByPhone(vehicle);
+        if (vehicle == null || vehicle.getPhone() == null) {
+            return;
         }
-        try {
-            VehicleMonitoringWebSocket.sendMessage(JsonUtil.toJson(vehicle));
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        Date now = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+        String modifyDate = simpleDateFormat.format(now);
+        if (vehicle.getLongitude() != null && vehicle.getLatitude() != null) {
+            positionDao.updatePosition(vehicle.getPhone() + modifyDate, modifyDate, vehicle.getLongitude().toString(), vehicle.getLatitude().toString());
+        }
+
+        if (vehicle.getProvince() != null || vehicle.getNumberPlate() != null || vehicle.getType() != null || vehicle.getState() != null || vehicle.getTemperature() != null || vehicle.getHumidity() != null || vehicle.getLoadweight() != null || vehicle.getLoadvolume() != null) {
+            vehicle.setModifyDate(now);
+            Vehicle vehicle2 = vehicleMapper.selectByPhone(vehicle.getPhone());
+            if (vehicle2 == null) {
+                vehicle.setCreateDate(now);
+                vehicle.setState((byte) 0);
+                vehicleMapper.insertSelective(vehicle);
+            } else {
+                vehicleMapper.updateByPhone(vehicle);
+            }
+        }
+
+        if (vehicle.getLongitude() != null || vehicle.getLatitude() != null || vehicle.getProvince() != null || vehicle.getNumberPlate() != null || vehicle.getType() != null || vehicle.getState() != null || vehicle.getTemperature() != null || vehicle.getHumidity() != null || vehicle.getLoadweight() != null || vehicle.getLoadvolume() != null) {
+            try {
+                VehicleMonitoringWebSocket.sendMessage(JsonUtil.toJson(vehicle));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -151,6 +170,9 @@ public class VehicleServiceImpl implements VehicleService {
                 vehicleAmount.put("name", x.getName().substring(0, 2));
             }
             vehicleAmount.put("value", amount);
+            if (x.getName().contains("内蒙古")) {
+                vehicleAmount.put("value", 0);
+            }
             distribution.add(vehicleAmount);
         }
         return distribution;

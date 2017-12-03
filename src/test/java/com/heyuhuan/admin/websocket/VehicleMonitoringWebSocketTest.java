@@ -2,6 +2,7 @@ package com.heyuhuan.admin.websocket;
 
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -30,6 +31,8 @@ public class VehicleMonitoringWebSocketTest {
         System.out.println(s1 == s6);
         System.out.println(s1 == s6.intern());
         System.out.println(s2 == s2.intern());
+        Date date = new Date(1507197932881l);
+        System.out.println(date);
     }
 
 }
